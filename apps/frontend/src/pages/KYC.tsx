@@ -4,7 +4,9 @@ import { UserCheck, Upload, FileText, CheckCircle, XCircle } from 'lucide-react'
 export default function KYC() {
   const [showInitiateModal, setShowInitiateModal] = useState(false);
   const [formData, setFormData] = useState({
-    endUserId: '',
+    endUserName: '',
+    endUserEmail: '',
+    endUserPhone: '',
     documentTypes: [] as string[],
     biometricRequired: false,
   });
@@ -53,9 +55,21 @@ export default function KYC() {
     'Bank Statement',
   ];
 
-  const handleInitiate = () => {
-    // TODO: API call to initiate KYC
+  co// Backend will:
+    // 1. Create KYC session
+    // 2. Generate unique link
+    // 3. Send email/SMS to end user
+    // 4. Return session ID for tracking
     console.log('Initiating KYC with:', formData);
+    alert(`✅ KYC link sent to ${formData.endUserEmail}\n\nEnd user will receive an email with a secure link to complete their verification.`);
+    setShowInitiateModal(false);
+    setFormData({ 
+      endUserName: '', 
+      endUserEmail: '', 
+      endUserPhone: '', 
+      documentTypes: [], 
+      biometricRequired: false 
+   
     setShowInitiateModal(false);
     setFormData({ endUserId: '', documentTypes: [], biometricRequired: false });
   };
@@ -189,22 +203,66 @@ export default function KYC() {
                   </td>
                 </tr>
               ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Initiate KYC Modal */}
-      {showInitiateModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-lg w-full mx-4">
-            <h3 className="text-xl font-semibold text-gray-900 mb-4">
-              Start KYC Verification
-            </h3>
+            
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+              <p className="text-sm text-blue-800">
+                <strong>How it works:</strong> Enter customer details below. They'll receive a secure email/SMS link to complete their own KYC verification.
+              </p>
+            </div>
 
             <div className="space-y-4">
-              {/* End User ID */}
+              {/* End User Name */}
               <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Customer Full Name *
+                </label>
+                <input
+                  type="text"
+                  value={formData.endUserName}
+                  onChange={(e) =>
+                    setFormData({ ...formData, endUserName: e.target.value })
+                  }
+                  placeholder="John Doe"
+                  className="input"
+                />
+              </div>
+
+              {/* End User Email */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Customer Email *
+                </label>
+                <input
+                  type="email"
+                  value={formData.endUserEmail}
+                  onChange={(e) =>
+                    setFormData({ ...formData, endUserEmail: e.target.value })
+                  }
+                  placeholder="john@example.com"
+                  className="input"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  KYC link will be sent to this email
+                </p>
+              </div>
+
+              {/* End User Phone */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Customer Phone (Optional)
+                </label>
+                <input
+                  type="tel"
+                  value={formData.endUserPhone}
+                  onChange={(e) =>
+                    setFormData({ ...formData, endUserPhone: e.target.value })
+                  }
+                  placeholder="+1234567890"
+                  className="input"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  SMS notification (optional)
+                </pv>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   End User ID *
                 </label>
@@ -222,10 +280,10 @@ export default function KYC() {
               {/* Document Types */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Document Types *
-                </label>
-                <div className="grid grid-cols-2 gap-2">
-                  {documentTypeOptions.map((type) => (
+                  Document Types *Name || !formData.endUserEmail || formData.documentTypes.length === 0}
+                className="btn btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Send KYC Links.map((type) => (
                     <button
                       key={type}
                       onClick={() => toggleDocumentType(type)}
