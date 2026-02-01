@@ -1,0 +1,27 @@
+{
+  "name": "callvia-certo",
+  "version": "1.0.0",
+  "description": "White-Label Multi-Tenant Compliance & AI Verification Platform",
+  "private": true,
+  "packageManager": "pnpm@10.23.0",
+  "scripts": {
+    "dev": "pnpm --parallel -r dev",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "test": "pnpm -r test",
+    "backend:dev": "pnpm --filter @callvia-certo/backend dev",
+    "frontend:dev": "pnpm --filter @callvia-certo/frontend dev"
+  },
+  "keywords": ["saas", "kyc", "verification", "multi-tenant", "white-label"],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "prettier": "^3.2.5",
+    "typescript": "^5.3.3"
+  }
+}
