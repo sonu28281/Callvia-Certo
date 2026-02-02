@@ -227,8 +227,7 @@ export default async function authRoutes(fastify: FastifyInstance) {
       companyName,
       email,
       message: 'Account created successfully! Check your email for login credentials.',
-      emailSent: true, // Assume it will be sent
-      temporaryPassword, // Include password in response as backup
+      emailSent: true, // Email sent in background
       kycConfig: {
         methods: profile.kycConfig.methods,
         pricing: {

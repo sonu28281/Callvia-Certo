@@ -60,25 +60,13 @@ export default function SignupNew() {
         throw new Error(data.error?.message || 'Signup failed');
       }
 
-      // Show success message
+      // Show success message (password sent via email only)
       setSuccess(true);
       
-      // Show user-friendly message with temporary password
-      const tempPassword = data.data?.temporaryPassword;
-      let message = `✅ Account created successfully!\n\nEmail: ${email}\n`;
-      
-      if (tempPassword) {
-        message += `Temporary Password: ${tempPassword}\n\n⚠️ IMPORTANT: Save this password! Also check your email for login credentials.\n\n`;
-      } else {
-        message += `\nCheck your email (${email}) for login credentials.\n\n`;
-      }
-      
-      message += `Redirecting to login page...`;
-      alert(message);
-      
+      // Auto redirect to login after 4 seconds
       setTimeout(() => {
         navigate('/login');
-      }, 3000);
+      }, 4000);
     } catch (err: any) {
       if (err.name === 'AbortError') {
         setError('Request timeout. The server is taking too long to respond. Please try again or contact support.');
