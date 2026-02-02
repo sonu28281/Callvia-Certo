@@ -50,8 +50,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Fetch user profile from backend API using Firebase token
   const fetchUserProfile = async (firebaseUser: User) => {
     try {
-      const token = await firebaseUser.getIdToken();
-      
       // Get custom claims from token
       const idTokenResult = await firebaseUser.getIdTokenResult();
       const role = idTokenResult.claims.role as string;
@@ -139,8 +137,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     email: string,
     password: string,
     displayName: string,
-    role: string,
-    tenantId?: string
+    _role: string,
+    _tenantId?: string
   ) => {
     try {
       // Create Firebase Auth user
@@ -149,15 +147,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       // Update display name
       await updateProfile(user, { displayName });
-
-      // Create Firestore user document
-      const userProfile: UserProfile = {
-        userId: user.uid,
-        email: user.email!,
-        displayName,
-        role: role as any,
-        tenantId,
-      };
 
       // Note: User creation now happens via backend signup API
       // This signup function is for internal use only
