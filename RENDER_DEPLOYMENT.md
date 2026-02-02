@@ -15,10 +15,10 @@
 3. Connect GitHub repository: `sonu28281/Callvia-Certo`
 4. Configure:
    - **Name**: `callvia-certo-backend`
-   - **Root Directory**: `apps/backend`
+   - **Root Directory**: Leave empty (use root)
    - **Environment**: `Node`
-   - **Build Command**: `npm install && npm run build`
-   - **Start Command**: `npm start`
+   - **Build Command**: `npm install -g pnpm && pnpm install && cd apps/backend && pnpm build`
+   - **Start Command**: `cd apps/backend && node dist/index.js`
    - **Plan**: Free
 
 ### Required Environment Variables
