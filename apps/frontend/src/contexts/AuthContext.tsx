@@ -14,7 +14,7 @@ interface UserProfile {
   userId: string;
   email: string;
   displayName: string;
-  role: 'PLATFORM_ADMIN' | 'TENANT_ADMIN' | 'TENANT_USER';
+  role: 'PLATFORM_ADMIN' | 'SUPER_ADMIN' | 'TENANT_ADMIN' | 'TENANT_USER';
   tenantId?: string;
   phoneNumber?: string;
   photoURL?: string;

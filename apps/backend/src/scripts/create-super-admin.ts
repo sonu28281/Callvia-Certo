@@ -20,9 +20,9 @@ async function createSuperAdmin() {
       const existingUser = await auth.getUserByEmail(SUPER_ADMIN_EMAIL);
       console.log('⚠️  User already exists with UID:', existingUser.uid);
       
-      // Update role to PLATFORM_ADMIN
+      // Update role to SUPER_ADMIN
       await setCustomClaims(existingUser.uid, {
-        role: 'PLATFORM_ADMIN',
+        role: 'SUPER_ADMIN',
         tenantId: null // Super admin has no specific tenant
       });
       
@@ -31,7 +31,7 @@ async function createSuperAdmin() {
         userId: existingUser.uid,
         email: SUPER_ADMIN_EMAIL,
         displayName: SUPER_ADMIN_NAME,
-        role: 'PLATFORM_ADMIN',
+        role: 'SUPER_ADMIN',
         tenantId: null,
         isActive: true,
         createdAt: new Date(),
@@ -39,10 +39,10 @@ async function createSuperAdmin() {
         permissions: ['manage_all_tenants', 'system_settings', 'view_all_data']
       }, { merge: true });
       
-      console.log('✅ Existing user upgraded to PLATFORM_ADMIN');
+      console.log('✅ Existing user upgraded to SUPER_ADMIN');
       console.log('📧 Email:', SUPER_ADMIN_EMAIL);
       console.log('🔑 Password: (unchanged)');
-      console.log('🎭 Role: PLATFORM_ADMIN');
+      console.log('🎭 Role: SUPER_ADMIN');
       
       return;
     } catch (error: any) {
@@ -63,7 +63,7 @@ async function createSuperAdmin() {
 
     // Set custom claims
     await setCustomClaims(userRecord.uid, {
-      role: 'PLATFORM_ADMIN',
+      role: 'SUPER_ADMIN',
       tenantId: null
     });
 
@@ -74,7 +74,7 @@ async function createSuperAdmin() {
       userId: userRecord.uid,
       email: SUPER_ADMIN_EMAIL,
       displayName: SUPER_ADMIN_NAME,
-      role: 'PLATFORM_ADMIN',
+      role: 'SUPER_ADMIN',
       tenantId: null,
       isActive: true,
       createdAt: new Date(),
