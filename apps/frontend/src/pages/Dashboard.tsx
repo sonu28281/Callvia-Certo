@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Wallet,
   UserCheck,
@@ -10,12 +11,18 @@ import { useAuth } from '../contexts/AuthContext';
 
 export default function Dashboard() {
   const { user, userProfile } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
 
+  // Redirect TENANT_ADMIN to tenant dashboard
   useEffect(() => {
-    // Simulate data loading
+    if (userProfile?.role === 'TENANT_ADMIN') {
+      console.log('🔄 Redirecting TENANT_ADMIN to tenant dashboard');
+      navigate('/tenant-dashboard', { replace: true });
+      return;
+    }
     setTimeout(() => setLoading(false), 500);
-  }, []);
+  }, [userProfile?.role, navigate]);
 
   if (loading) {
     return (
