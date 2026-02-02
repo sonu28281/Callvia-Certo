@@ -9,6 +9,9 @@ import { emailService } from '../services/email.service';
 import { overrideLogService } from './override-log.service';
 import { tenantProfileService } from '../tenant/tenant-profile.service';
 import multipart from '@fastify/multipart';
+import { asyncHandler, errors } from '../utils/error-handler';
+import { sendSuccess } from '../utils/response-formatter';
+import { validateRequired, validateEmail, validateLength } from '../utils/validators';
 
 /**
  * In-House KYC Routes (No Third Party!)
@@ -38,13 +41,11 @@ export async function inHouseKycRoutes(fastify: FastifyInstance) {
    */
   fastify.post(
     '/initiate',
-    async (request, reply) => {
+    asyncHandler(async (request, reply) => {
       const { 
         endUserName, 
         endUserEmail, 
         endUserPhone,
-        
-        // Override Support (optional - only for specific customers)
         isOverride = false,
         overrideReason,
         overrideNotes,
@@ -52,207 +53,186 @@ export async function inHouseKycRoutes(fastify: FastifyInstance) {
         appliedBy = 'admin' // TODO: Get from auth
       } = request.body as any;
 
-      try {
-        console.log('📥 Received KYC request:', { endUserName, endUserEmail });
+      // Validate required fields
+      validateRequired(
+        { endUserName, endUserEmail },
+        ['endUserName', 'endUserEmail']
+      );
+      validateEmail(endUserEmail);
 
-        // Mock tenant ID for testing
-        // TODO: Get from auth token
-        const tenantId = 'tenant_test_001';
-        const userId = 'user_test_001';
+      console.log('📥 Received KYC request:', { endUserName, endUserEmail });
 
-        // Get tenant's KYC configuration
-        let tenantProfile = tenantProfileService.getProfile(tenantId);
-        
-        // If no profile exists, create default one
-        if (!tenantProfile) {
-          console.log('⚠️ No tenant profile found, creating default...');
-          tenantProfile = tenantProfileService.createProfile(
-            tenantId,
-            'Test Company',
-            { templateId: 'standard-digilocker-liveness' }
-          );
-        }
+      // Mock tenant ID for testing
+      // TODO: Get from auth token
+      const tenantId = 'tenant_test_001';
+      const userId = 'user_test_001';
 
-        // Get tenant's configured methods
-        const configuredMethods = tenantProfile.kycConfig.methods;
-        const baseCost = tenantProfile.pricing.totalPrice;
-        
-        console.log(`📋 Tenant Methods: ${configuredMethods.join(', ')}`);
-        console.log(`💰 Base Cost: ₹${baseCost.toFixed(2)}`);
-
-        // Create KYC session
-        const session = await inHouseKYC.createSession({
+      // Get tenant's KYC configuration
+      let tenantProfile = tenantProfileService.getProfile(tenantId);
+      
+      // If no profile exists, create default one
+      if (!tenantProfile) {
+        console.log('⚠️ No tenant profile found, creating default...');
+        tenantProfile = tenantProfileService.createProfile(
           tenantId,
-          initiatedBy: userId,
-          endUserName,
-          endUserEmail,
-          endUserPhone,
-        });
-
-        // Convert KYC methods to verification methods object
-        const verificationMethods = {
-          digilocker: configuredMethods.includes('digilocker'),
-          liveness: configuredMethods.includes('liveness'),
-          aadhaarOTP: configuredMethods.includes('aadhaar_otp'),
-          passport: configuredMethods.includes('passport'),
-          documentUpload: configuredMethods.includes('document_upload'),
-          videoKYC: configuredMethods.includes('video_kyc'),
-          digitalContract: configuredMethods.includes('digital_contract')
-        };
-
-        let totalCost = baseCost;
-        let costDelta = 0;
-        
-        // Apply override if requested AND allowed
-        if (isOverride) {
-          if (!tenantProfile.kycConfig.allowOverrides) {
-            return reply.status(403).send({
-              success: false,
-              error: 'Tenant is not allowed to use KYC overrides'
-            });
-          }
-          
-          // Validate override reason
-          if (!overrideReason || overrideReason.trim().length === 0) {
-            return reply.status(400).send({
-              success: false,
-              error: 'Override reason is required when isOverride is true'
-            });
-          }
-          
-          // Calculate additional cost based on modules
-          const moduleCosts: Record<string, number> = {
-            'aadhaar_otp': 3.50,
-            'video_kyc': 15.00,
-            'enhanced_liveness': 2.00
-          };
-          
-          additionalModules.forEach((module: string) => {
-            const cost = moduleCosts[module] || 0;
-            totalCost += cost;
-            costDelta += cost;
-          });
-          
-          // Store original config for logging
-          const originalConfig = {
-            methods: configuredMethods,
-            verificationMethods: { ...verificationMethods },
-            documentTypes: (session as any).documentTypes,
-            estimatedCost: baseCost
-          };
-          
-          // Apply override config
-          const overrideVerificationMethods = {
-            ...verificationMethods,
-            aadhaarOTP: verificationMethods.aadhaarOTP || additionalModules.includes('aadhaar_otp'),
-            videoKYC: verificationMethods.videoKYC || additionalModules.includes('video_kyc'),
-            enhancedLiveness: additionalModules.includes('enhanced_liveness')
-          };
-          
-          const overrideConfig = {
-            methods: [...configuredMethods, ...additionalModules.filter((m: string) => !configuredMethods.includes(m as any))],
-            verificationMethods: overrideVerificationMethods,
-            documentTypes: (session as any).documentTypes,
-            estimatedCost: totalCost
-          };
-          
-          // Log the override
-          const overrideLog = overrideLogService.logOverride({
-            sessionId: session.id,
-            tenantId,
-            customerName: endUserName,
-            customerEmail: endUserEmail,
-            originalConfig,
-            overrideConfig,
-            reason: overrideReason,
-            notes: overrideNotes,
-            appliedBy,
-            appliedByRole: 'admin',
-            ipAddress: request.ip,
-            userAgent: request.headers['user-agent']
-          });
-          
-          console.log('🔧 Override applied:', {
-            sessionId: session.id,
-            addedModules: overrideLog.addedModules,
-            costDelta: `+₹${costDelta.toFixed(2)}`,
-            reason: overrideReason
-          });
-          
-          // Update verification methods with override
-          (session as any).verificationMethods = overrideVerificationMethods;
-          (session as any).isOverride = true;
-          (session as any).overrideLogId = overrideLog.id;
-        } else {
-          // No override - use tenant's configured methods
-          (session as any).verificationMethods = verificationMethods;
-          (session as any).isOverride = false;
-        }
-        
-        // Store common session data
-        (session as any).configuredMethods = configuredMethods;
-        (session as any).documentTypes = configuredMethods.includes('passport') ? ['Passport'] : ['Aadhaar', 'PAN'];
-        (session as any).biometricRequired = configuredMethods.includes('liveness');
-        (session as any).totalCost = totalCost;
-        (session as any).costDelta = costDelta;
-
-        // Generate unified KYC URL (single entry point for all methods)
-        const unifiedKycUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/kyc/unified/${session.id}`;
-
-        console.log('📧 Sending email to:', endUserEmail);
-        console.log('🔗 Unified KYC URL:', unifiedKycUrl);
-        console.log('📋 Configured Methods:', configuredMethods);
-        console.log('💰 Total Cost: ₹' + totalCost.toFixed(2));
-
-        // Send real email with tenant's configured methods
-        try {
-          await emailService.sendKYCLink({
-            customerName: endUserName,
-            customerEmail: endUserEmail,
-            verificationUrl: unifiedKycUrl,
-            sessionId: session.id,
-            documentTypes: (session as any).documentTypes,
-            companyName: tenantProfile.companyName,
-            verificationMethods: (session as any).verificationMethods,
-          });
-          console.log('✅ Email sent successfully to:', endUserEmail);
-        } catch (emailError: any) {
-          console.error('❌ Email sending failed:', emailError.message);
-          // Continue even if email fails (for testing)
-        }
-
-        return reply.status(200).send({
-          success: true,
-          data: {
-            sessionId: session.id,
-            verificationUrl: unifiedKycUrl,
-            expiresAt: typeof session.expiresAt === 'string' ? session.expiresAt : (session.expiresAt as any) instanceof Date ? (session.expiresAt as Date).toISOString() : session.expiresAt,
-            configuredMethods,
-            isOverride,
-            totalCost,
-            costDelta: isOverride ? costDelta : 0,
-            message: `KYC link sent to ${endUserEmail}`,
-          },
-          meta: {
-            request_id: request.id,
-            timestamp: new Date().toISOString(),
-          },
-        });
-      } catch (error: any) {
-        console.error('❌ Error initiating KYC:', error);
-        return reply.status(500).send({
-          success: false,
-          error: {
-            code: 'KYC_INITIATE_ERROR',
-            message: error.message || 'Failed to initiate KYC',
-          },
-          meta: {
-            request_id: request.id,
-            timestamp: new Date().toISOString(),
-          },
-        });
+          'Test Company',
+          { templateId: 'standard-digilocker-liveness' }
+        );
       }
-    }
+
+      // Get tenant's configured methods
+      const configuredMethods = tenantProfile.kycConfig.methods;
+      const baseCost = tenantProfile.pricing.totalPrice;
+      
+      console.log(`📋 Tenant Methods: ${configuredMethods.join(', ')}`);
+      console.log(`💰 Base Cost: ₹${baseCost.toFixed(2)}`);
+
+      // Create KYC session
+      const session = await inHouseKYC.createSession({
+        tenantId,
+        initiatedBy: userId,
+        endUserName,
+        endUserEmail,
+        endUserPhone,
+      });
+
+      // Convert KYC methods to verification methods object
+      const verificationMethods = {
+        digilocker: configuredMethods.includes('digilocker'),
+        liveness: configuredMethods.includes('liveness'),
+        aadhaarOTP: configuredMethods.includes('aadhaar_otp'),
+        passport: configuredMethods.includes('passport'),
+        documentUpload: configuredMethods.includes('document_upload'),
+        videoKYC: configuredMethods.includes('video_kyc'),
+        digitalContract: configuredMethods.includes('digital_contract')
+      };
+
+      let totalCost = baseCost;
+      let costDelta = 0;
+      
+      // Apply override if requested AND allowed
+      if (isOverride) {
+        if (!tenantProfile.kycConfig.allowOverrides) {
+          throw errors.forbidden('Tenant is not allowed to use KYC overrides');
+        }
+        
+        // Validate override reason
+        if (!overrideReason || overrideReason.trim().length === 0) {
+          throw errors.validation('Override reason is required when isOverride is true');
+        }
+        
+        // Calculate additional cost based on modules
+        const moduleCosts: Record<string, number> = {
+          'aadhaar_otp': 3.50,
+          'video_kyc': 15.00,
+          'enhanced_liveness': 2.00
+        };
+        
+        additionalModules.forEach((module: string) => {
+          const cost = moduleCosts[module] || 0;
+          totalCost += cost;
+          costDelta += cost;
+        });
+        
+        // Store original config for logging
+        const originalConfig = {
+          methods: configuredMethods,
+          verificationMethods: { ...verificationMethods },
+          documentTypes: (session as any).documentTypes,
+          estimatedCost: baseCost
+        };
+        
+        // Apply override config
+        const overrideVerificationMethods = {
+          ...verificationMethods,
+          aadhaarOTP: verificationMethods.aadhaarOTP || additionalModules.includes('aadhaar_otp'),
+          videoKYC: verificationMethods.videoKYC || additionalModules.includes('video_kyc'),
+          enhancedLiveness: additionalModules.includes('enhanced_liveness')
+        };
+        
+        const overrideConfig = {
+          methods: [...configuredMethods, ...additionalModules.filter((m: string) => !configuredMethods.includes(m as any))],
+          verificationMethods: overrideVerificationMethods,
+          documentTypes: (session as any).documentTypes,
+          estimatedCost: totalCost
+        };
+        
+        // Log the override
+        const overrideLog = overrideLogService.logOverride({
+          sessionId: session.id,
+          tenantId,
+          customerName: endUserName,
+          customerEmail: endUserEmail,
+          originalConfig,
+          overrideConfig,
+          reason: overrideReason,
+          notes: overrideNotes,
+          appliedBy,
+          appliedByRole: 'admin',
+          ipAddress: request.ip,
+          userAgent: request.headers['user-agent']
+        });
+        
+        console.log('🔧 Override applied:', {
+          sessionId: session.id,
+          addedModules: overrideLog.addedModules,
+          costDelta: `+₹${costDelta.toFixed(2)}`,
+          reason: overrideReason
+        });
+        
+        // Update verification methods with override
+        (session as any).verificationMethods = overrideVerificationMethods;
+        (session as any).isOverride = true;
+        (session as any).overrideLogId = overrideLog.id;
+      } else {
+        // No override - use tenant's configured methods
+        (session as any).verificationMethods = verificationMethods;
+        (session as any).isOverride = false;
+      }
+      
+      // Store common session data
+      (session as any).configuredMethods = configuredMethods;
+      (session as any).documentTypes = configuredMethods.includes('passport') ? ['Passport'] : ['Aadhaar', 'PAN'];
+      (session as any).biometricRequired = configuredMethods.includes('liveness');
+      (session as any).totalCost = totalCost;
+      (session as any).costDelta = costDelta;
+
+      // Generate unified KYC URL (single entry point for all methods)
+      const unifiedKycUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/kyc/unified/${session.id}`;
+
+      console.log('📧 Sending email to:', endUserEmail);
+      console.log('🔗 Unified KYC URL:', unifiedKycUrl);
+      console.log('📋 Configured Methods:', configuredMethods);
+      console.log('💰 Total Cost: ₹' + totalCost.toFixed(2));
+
+      // Send real email with tenant's configured methods
+      try {
+        await emailService.sendKYCLink({
+          customerName: endUserName,
+          customerEmail: endUserEmail,
+          verificationUrl: unifiedKycUrl,
+          sessionId: session.id,
+          documentTypes: (session as any).documentTypes,
+          companyName: tenantProfile.companyName,
+          verificationMethods: (session as any).verificationMethods,
+        });
+        console.log('✅ Email sent successfully to:', endUserEmail);
+      } catch (emailError: any) {
+        console.error('❌ Email sending failed:', emailError.message);
+        // Continue even if email fails (for testing)
+      }
+
+      return sendSuccess(reply, request, {
+        sessionId: session.id,
+        verificationUrl: unifiedKycUrl,
+        expiresAt: typeof session.expiresAt === 'string' ? session.expiresAt : (session.expiresAt as any) instanceof Date ? (session.expiresAt as Date).toISOString() : session.expiresAt,
+        configuredMethods,
+        isOverride,
+        totalCost,
+        costDelta: isOverride ? costDelta : 0,
+        message: `KYC link sent to ${endUserEmail}`,
+      });
+    })
   );
 
   // Protected routes below (require auth)
