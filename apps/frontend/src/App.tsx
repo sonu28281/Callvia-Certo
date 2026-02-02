@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import DashboardLayout from './components/layouts/DashboardLayout';
 import Dashboard from './pages/Dashboard';
+import TenantDashboard from './pages/TenantDashboard';
 import Wallet from './pages/Wallet';
 import KYC from './pages/KYC';
 import Voice from './pages/Voice';
@@ -43,6 +44,7 @@ function AppRoutes() {
         <>
           <Route path="/" element={<DashboardLayout />}>
             <Route index element={<Dashboard />} />
+            <Route path="tenant-dashboard" element={<TenantDashboard />} />
             <Route path="wallet" element={<Wallet />} />
             <Route path="kyc" element={<KYC />} />
             <Route path="voice" element={<Voice />} />
