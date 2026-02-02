@@ -30,7 +30,8 @@ interface NavItem {
   badge?: string;
 }
 
-const navigation: NavItem[] = [
+// Admin navigation (SUPER_ADMIN only)
+const adminNavigation: NavItem[] = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
   { name: 'Wallet', href: '/wallet', icon: Wallet },
   { name: 'KYC Verification', href: '/kyc', icon: UserCheck },
@@ -41,10 +42,23 @@ const navigation: NavItem[] = [
   { name: 'Settings', href: '/settings', icon: Settings },
 ];
 
+// Tenant navigation (TENANT_ADMIN only)
+const tenantNavigation: NavItem[] = [
+  { name: 'Dashboard', href: '/tenant-dashboard', icon: LayoutDashboard },
+  { name: 'Verifications', href: '/tenant-dashboard', icon: UserCheck },
+  { name: 'Reports', href: '/tenant-dashboard', icon: FileText },
+  { name: 'Audit Logs', href: '/tenant-dashboard', icon: FileText },
+  { name: 'Team Members', href: '/tenant-dashboard', icon: Users },
+  { name: 'Settings', href: '/tenant-dashboard', icon: Settings },
+];
+
 export default function Sidebar({ open, onClose, collapsed, onToggleCollapse }: SidebarProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const { logout, userProfile } = useAuth();
+
+  // Determine which navigation to show based on user role
+  const navItems = userProfile?.role === 'TENANT_ADMIN' ? tenantNavigation : adminNavigation;
 
   const handleLogout = async () => {
     try {
@@ -111,7 +125,7 @@ export default function Sidebar({ open, onClose, collapsed, onToggleCollapse }: 
 
           {/* Navigation */}
           <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
-            {navigation.map((item) => {
+            {navItems.map((item) => {
               const isActive = location.pathname === item.href;
               return (
                 <Link
