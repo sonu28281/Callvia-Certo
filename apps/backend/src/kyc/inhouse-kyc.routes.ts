@@ -3,6 +3,7 @@ import { authMiddleware } from '../middleware/auth.middleware';
 import { tenantMiddleware } from '../middleware/tenant.middleware';
 import { requireRole } from '../middleware/rbac.middleware';
 import { auditLogger } from '../services/audit-logger.service';
+import { AuditEventType, AuditEventResult, ActorType } from '@callvia-certo/types';
 import { inHouseKYC } from '../services/inhouse-kyc.service';
 import { emailService } from '../services/email.service';
 import { overrideLogService } from './override-log.service';
@@ -225,7 +226,7 @@ export async function inHouseKycRoutes(fastify: FastifyInstance) {
           data: {
             sessionId: session.id,
             verificationUrl: unifiedKycUrl,
-            expiresAt: session.expiresAt instanceof Date ? session.expiresAt.toISOString() : session.expiresAt,
+            expiresAt: typeof session.expiresAt === 'string' ? session.expiresAt : (session.expiresAt as any) instanceof Date ? (session.expiresAt as Date).toISOString() : session.expiresAt,
             configuredMethods,
             isOverride,
             totalCost,
@@ -396,7 +397,10 @@ export async function inHouseKycRoutes(fastify: FastifyInstance) {
           });
         }
 
-        return reply.sendFile(filePath);
+        // Read and send file
+        const fs = require('fs');
+        const fileBuffer = fs.readFileSync(filePath);
+        return reply.type('application/octet-stream').send(fileBuffer);
       } catch (error: any) {
         return reply.status(500).send({
           success: false,
@@ -427,20 +431,20 @@ export async function inHouseKycRoutes(fastify: FastifyInstance) {
 
         // Audit log
         await auditLogger.log({
-          event_type: 'KYC_APPROVED',
-          eventResult: 'ALLOWED',
-          actorId: userId,
-          actorRole: role,
-          tenantId,
-          targetEntity: 'KYC_SESSION',
-          targetId: sessionId,
+          event_type: AuditEventType.KYC_APPROVED,
+          event_result: AuditEventResult.ALLOWED,
+          actor_id: userId,
+          actor_role: role,
+          tenant_id: tenantId,
+          target_entity: 'KYC_SESSION',
+          target_id: sessionId,
           metadata: {
             endUserEmail: session.endUserEmail,
             notes,
           },
           message: `KYC approved for ${session.endUserEmail}`,
-          ipAddress: request.ip,
-          userAgent: request.headers['user-agent'],
+          ip_address: request.ip,
+          user_agent: request.headers['user-agent'],
         });
 
         return reply.send({
@@ -478,20 +482,20 @@ export async function inHouseKycRoutes(fastify: FastifyInstance) {
 
         // Audit log
         await auditLogger.log({
-          event_type: 'KYC_REJECTED',
-          eventResult: 'REJECTED',
-          actorId: userId,
-          actorRole: role,
-          tenantId,
-          targetEntity: 'KYC_SESSION',
-          targetId: sessionId,
+          event_type: AuditEventType.KYC_REJECTED,
+          event_result: AuditEventResult.FAILED,
+          actor_id: userId,
+          actor_role: role,
+          tenant_id: tenantId,
+          target_entity: 'KYC_SESSION',
+          target_id: sessionId,
           metadata: {
             endUserEmail: session.endUserEmail,
             reason,
           },
           message: `KYC rejected for ${session.endUserEmail}`,
-          ipAddress: request.ip,
-          userAgent: request.headers['user-agent'],
+          ip_address: request.ip,
+          user_agent: request.headers['user-agent'],
         });
 
         return reply.send({

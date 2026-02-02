@@ -4,6 +4,7 @@ import { tenantMiddleware } from '../middleware/tenant.middleware';
 import { requireRole } from '../middleware/rbac.middleware';
 import { serviceGatekeeper } from '../middleware/gatekeeper.middleware';
 import { auditLogger } from '../services/audit-logger.service';
+import { AuditEventType, AuditEventResult, ActorType } from '@callvia-certo/types';
 import { onfidoProvider } from '../services/onfido.service';
 import { walletEngine } from '../engines/wallet.engine';
 import { generateId } from '../utils/id-generator';
@@ -102,13 +103,13 @@ export async function realKycRoutes(fastify: FastifyInstance) {
 
         // Audit log
         await auditLogger.log({
-          event_type: 'KYC_REAL_INITIATED',
-          eventResult: 'ALLOWED',
-          actorId: userId,
-          actorRole: role,
-          tenantId,
-          targetEntity: 'KYC_SESSION',
-          targetId: sessionId,
+          event_type: AuditEventType.KYC_REAL_INITIATED,
+          event_result: AuditEventResult.ALLOWED,
+          actor_id: userId,
+          actor_role: role,
+          tenant_id: tenantId,
+          target_entity: 'KYC_SESSION',
+          target_id: sessionId,
           metadata: {
             applicantId: applicant.id,
             endUserEmail,
@@ -117,8 +118,8 @@ export async function realKycRoutes(fastify: FastifyInstance) {
             provider: 'onfido',
           },
           message: `Real KYC initiated for ${endUserEmail}`,
-          ipAddress: request.ip,
-          userAgent: request.headers['user-agent'],
+          ip_address: request.ip,
+          user_agent: request.headers['user-agent'],
         });
 
         return reply.send({
@@ -135,17 +136,17 @@ export async function realKycRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         // Audit log for failure
         await auditLogger.log({
-          event_type: 'KYC_REAL_FAILED',
-          eventResult: 'FAILED',
-          actorId: userId,
-          actorRole: role,
-          tenantId,
-          targetEntity: 'KYC_SESSION',
-          targetId: sessionId,
+          event_type: AuditEventType.KYC_REAL_FAILED,
+          event_result: AuditEventResult.FAILED,
+          actor_id: userId,
+          actor_role: role,
+          tenant_id: tenantId,
+          target_entity: 'KYC_SESSION',
+          target_id: sessionId,
           metadata: { endUserEmail, error: error.message },
           message: `KYC initiation failed: ${error.message}`,
-          ipAddress: request.ip,
-          userAgent: request.headers['user-agent'],
+          ip_address: request.ip,
+          user_agent: request.headers['user-agent'],
         });
 
         return reply.status(500).send({
@@ -185,17 +186,17 @@ export async function realKycRoutes(fastify: FastifyInstance) {
         // TODO: Update database with check ID
 
         await auditLogger.log({
-          event_type: 'KYC_CHECK_CREATED',
-          eventResult: 'ALLOWED',
-          actorId: userId,
-          actorRole: role,
-          tenantId,
-          targetEntity: 'KYC_CHECK',
-          targetId: check.id,
+          event_type: AuditEventType.KYC_CHECK_CREATED,
+          event_result: AuditEventResult.ALLOWED,
+          actor_id: userId,
+          actor_role: role,
+          tenant_id: tenantId,
+          target_entity: 'KYC_CHECK',
+          target_id: check.id,
           metadata: { sessionId, applicantId, checkId: check.id },
           message: 'KYC verification check created',
-          ipAddress: request.ip,
-          userAgent: request.headers['user-agent'],
+          ip_address: request.ip,
+          user_agent: request.headers['user-agent'],
         });
 
         return reply.send({

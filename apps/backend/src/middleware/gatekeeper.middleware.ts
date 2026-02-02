@@ -5,7 +5,7 @@ import { walletEngine } from '../engines/wallet.engine';
 import { pricingEngine } from '../engines/pricing.engine';
 import { auditLogger } from '../services/audit-logger.service';
 
-export function serviceGatekeeper(serviceCode: ServiceCode) {
+export function serviceGatekeeper(serviceCode: ServiceCode | string) {
   return async (request: FastifyRequest, reply: FastifyReply) => {
     if (!request.user || !request.tenantContext) {
       return reply.status(401).send({
@@ -59,7 +59,7 @@ export function serviceGatekeeper(serviceCode: ServiceCode) {
     }
     
     // 2. Check pricing configuration
-    const pricing = await pricingEngine.getServicePrice(tenantId, serviceCode);
+    const pricing = await pricingEngine.getServicePrice(tenantId, serviceCode as any);
     
     if (!pricing) {
       await auditLogger.log({

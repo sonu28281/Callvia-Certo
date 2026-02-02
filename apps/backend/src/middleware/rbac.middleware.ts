@@ -3,7 +3,7 @@ import { UserRole, ErrorCode } from '@callvia-certo/types';
 import { auditLogger } from '../services/audit-logger.service';
 import { AuditEventType, AuditEventResult, ActorType } from '@callvia-certo/types';
 
-export function requireRole(...allowedRoles: UserRole[]) {
+export function requireRole(...allowedRoles: (UserRole | string)[]) {
   return async (request: FastifyRequest, reply: FastifyReply) => {
     if (!request.user) {
       return reply.status(401).send({
