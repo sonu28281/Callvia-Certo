@@ -74,9 +74,8 @@ export default function Tenants() {
       sessionStorage.setItem('impersonatedTenantName', tenantName);
       sessionStorage.setItem('impersonatedBy', auth.currentUser?.uid || '');
       
-      alert(`Impersonating ${tenantName}. You will now see the tenant's view.`);
-      // Reload to apply impersonation
-      window.location.href = '/';
+      // Navigate to impersonation dashboard
+      window.location.href = '/tenant-impersonation';
     } catch (error) {
       console.error('Failed to login as tenant:', error);
       alert('Failed to login as tenant');

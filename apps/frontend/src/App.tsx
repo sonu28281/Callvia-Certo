@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import DashboardLayout from './components/layouts/DashboardLayout';
 import Dashboard from './pages/Dashboard';
 import TenantDashboard from './pages/TenantDashboard';
+import TenantImpersonationDashboard from './pages/TenantImpersonationDashboard';
 import Wallet from './pages/Wallet';
 import KYC from './pages/KYC';
 import Voice from './pages/Voice';
@@ -39,6 +40,9 @@ function AppRoutes() {
       {/* Auth Routes */}
       <Route path="/login" element={!user ? <Login /> : <Navigate to="/" replace />} />
       <Route path="/signup" element={!user ? <SignupNew /> : <Navigate to="/" replace />} />
+      
+      {/* Tenant Impersonation Dashboard (Top-level route) */}
+      <Route path="/tenant-impersonation" element={user ? <TenantImpersonationDashboard /> : <Navigate to="/login" replace />} />
       
       {user ? (
         <>
