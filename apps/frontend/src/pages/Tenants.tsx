@@ -7,6 +7,7 @@ import { API_ENDPOINTS } from '../config/api';
 interface Tenant {
   id: string;
   name: string;
+  email?: string;
   domain: string;
   status: 'enabled' | 'disabled';
   walletBalance: number;
@@ -53,6 +54,7 @@ export default function Tenants() {
           const formattedTenants = result.data.tenants.map((t: any) => ({
             id: t.tenantId || t.id,
             name: t.companyName || t.name || 'Unknown',
+            email: t.companyEmail || t.email || t.contactEmail || 'N/A',
             domain: `${t.companyName?.toLowerCase().replace(/\s+/g, '-') || 'tenant'}.callvia-certo.com`,
             status: t.status || (t.isActive ? 'enabled' : 'disabled'),
             walletBalance: t.wallet?.balance || 0,
@@ -318,7 +320,7 @@ export default function Tenants() {
                   <h3 className="text-lg font-semibold text-gray-900">
                     {tenant.name}
                   </h3>
-                  <p className="text-sm text-gray-500">{tenant.id}</p>
+                  <p className="text-sm text-gray-500">{tenant.email}</p>
                 </div>
               </div>
               <span className={`badge ${tenant.status === 'enabled' ? 'badge-success' : 'badge-error'}`}>
@@ -437,7 +439,7 @@ export default function Tenants() {
                         </div>
                         <div className="ml-3">
                           <div className="text-sm font-medium text-gray-900">{tenant.name}</div>
-                          <div className="text-sm text-gray-500">{tenant.id}</div>
+                          <div className="text-sm text-gray-500">{tenant.email}</div>
                         </div>
                       </div>
                     </td>
