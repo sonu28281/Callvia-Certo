@@ -5,6 +5,18 @@ export async function authMiddleware(
   request: FastifyRequest,
   reply: FastifyReply
 ) {
+  // Skip auth for public endpoints
+  const publicEndpoints = [
+    '/api/v1/kyc/inhouse/initiate',
+  ];
+  
+  // Extract path without query params
+  const path = request.url.split('?')[0];
+  
+  if (publicEndpoints.includes(path) || path.includes('/api/v1/kyc/inhouse/') && path.includes('/upload')) {
+    return; // Skip authentication
+  }
+  
   // TODO: Verify JWT token from Authorization header
   // TODO: Extract user_id, tenant_id, role from token
   // TODO: Validate token expiration

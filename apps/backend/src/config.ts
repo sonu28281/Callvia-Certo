@@ -1,4 +1,8 @@
-import 'dotenv/config';
+import { config as dotenvConfig } from 'dotenv';
+import path from 'path';
+
+// Load .env from workspace root (not backend folder)
+dotenvConfig({ path: path.resolve(__dirname, '../../../.env') });
 
 export const config = {
   env: process.env.NODE_ENV || 'development',

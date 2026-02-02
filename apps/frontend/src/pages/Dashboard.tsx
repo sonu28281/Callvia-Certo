@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import {
   Wallet,
   UserCheck,
@@ -6,9 +7,25 @@ import {
   TrendingUp,
   AlertCircle,
 } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function Dashboard() {
-  // TODO: Fetch from API
+  const { user, userProfile } = useAuth();
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate data loading
+    setTimeout(() => setLoading(false), 500);
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      </div>
+    );
+  }
+
   const stats = [
     {
       name: 'Wallet Balance',
@@ -77,10 +94,43 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
+      {/* Page Header with User Info */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Welcome back, {userProfile?.displayName || user?.email?.split('@')[0] || 'User'}! 👋
+            </h1>
+            <p className="text-gray-600 mt-1">
+              {userProfile?.role === 'PLATFORM_ADMIN' 
+                ? 'Super Admin Dashboard - Managing all tenants' 
+                : userProfile?.role === 'TENANT_ADMIN'
+                ? `Company Admin Dashboard`
+                : 'User Dashboard'}
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="text-sm text-gray-500">Role</p>
+            <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+              userProfile?.role === 'PLATFORM_ADMIN' 
+                ? 'bg-purple-100 text-purple-800'
+                : userProfile?.role === 'TENANT_ADMIN'
+                ? 'bg-blue-100 text-blue-800'
+                : 'bg-green-100 text-green-800'
+            }`}>
+              {userProfile?.role === 'PLATFORM_ADMIN' 
+                ? '🔥 Super Admin' 
+                : userProfile?.role === 'TENANT_ADMIN'
+                ? '👔 Tenant Admin'
+                : '👤 User'}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Page Subtitle */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-600 mt-1">
+        <p className="text-gray-600">
           Overview of your verification platform
         </p>
       </div>

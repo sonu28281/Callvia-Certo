@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: callvia-certo-backend
+    runtime: node
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: cd apps/backend && npm install
+    startCommand: cd apps/backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: FIREBASE_PROJECT_ID
+        sync: false
+      - key: FIREBASE_PRIVATE_KEY
+        sync: false
+      - key: FIREBASE_CLIENT_EMAIL
+        sync: false
+      - key: SMTP_HOST
+        value: mail.autoxweb.com
+      - key: SMTP_PORT
+        value: 465
+      - key: SMTP_USER
+        value: info@autoxweb.com
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: FRONTEND_URL
+        value: https://your-app.netlify.app

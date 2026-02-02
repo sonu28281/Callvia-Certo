@@ -18,9 +18,34 @@ export async function registerRoutes(fastify: FastifyInstance) {
       prefix: '/tenants',
     });
     
-    // KYC routes
+    // Tenant Profile routes (KYC configuration)
+    await api.register((await import('./tenant/tenant-profile.routes')).tenantProfileRoutes, {
+      prefix: '/reseller',
+    });
+    
+    // KYC routes (mock)
     await api.register((await import('./kyc/kyc.routes')).default, {
       prefix: '/kyc',
+    });
+    
+    // Real KYC routes (Onfido - Third Party)
+    await api.register((await import('./kyc/real-kyc.routes')).realKycRoutes, {
+      prefix: '/kyc/real',
+    });
+    
+    // In-House KYC routes (No Third Party!)
+    await api.register((await import('./kyc/inhouse-kyc.routes')).inHouseKycRoutes, {
+      prefix: '/kyc/inhouse',
+    });
+    
+    // Digital KYC routes (DigiLocker, Aadhaar OTP)
+    await api.register((await import('./kyc/digital-kyc.routes')).default, {
+      prefix: '/kyc',
+    });
+    
+    // Liveness Detection routes
+    await api.register((await import('./kyc/liveness.routes')).default, {
+      prefix: '/kyc/liveness',
     });
     
     // Voice routes
