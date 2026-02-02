@@ -90,6 +90,27 @@ export default async function authRoutes(fastify: FastifyInstance) {
     );
     validateEmail(email);
 
+    // Check if email already exists in Firebase Auth
+    try {
+      const existingUser = await auth.getUserByEmail(email);
+      if (existingUser) {
+        throw errors.validation(
+          'This email is already registered. Please use a different email or try logging in.',
+          { email, exists: true }
+        );
+      }
+    } catch (error: any) {
+      // If error code is 'auth/user-not-found', email doesn't exist - continue with signup
+      if (error.code !== 'auth/user-not-found') {
+        // If it's our custom validation error, throw it
+        if (error.name === 'AppError') {
+          throw error;
+        }
+        // For other Firebase errors, log and continue
+        console.warn('Error checking existing user:', error.message);
+      }
+    }
+
     // Force role to TENANT_ADMIN - only tenant admins can signup
     const role = 'TENANT_ADMIN';
 
