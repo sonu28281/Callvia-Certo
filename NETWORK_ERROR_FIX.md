@@ -17,8 +17,8 @@ The Netlify frontend is trying to connect to `localhost:3000` instead of your ac
 ### Step 1: Find Your Render Backend URL
 
 1. Go to [Render Dashboard](https://dashboard.render.com/)
-2. Click on your `callvia-certo-backend` service
-3. Copy the URL at the top (looks like: `https://callvia-certo-backend.onrender.com`)
+2. Click on your `callvia-certo` service
+3. Copy the URL at the top (looks like: `https://callvia-certo.onrender.com`)
 
 ### Step 2: Update Netlify Environment Variable
 
@@ -30,7 +30,7 @@ The Netlify frontend is trying to connect to `localhost:3000` instead of your ac
 4. Click **Add a variable**
 5. Add:
    - **Key**: `VITE_API_URL`
-   - **Value**: `https://callvia-certo-backend.onrender.com` (your actual Render URL)
+   - **Value**: `https://callvia-certo.onrender.com` (your actual Render URL)
 6. Click **Save**
 7. Go to **Deploys** tab
 8. Click **Trigger deploy** → **Clear cache and deploy site**
@@ -47,11 +47,11 @@ The `netlify.toml` file has been updated with the backend URL. Just push to git 
 
 ```toml
 [build.environment]
-  VITE_API_URL = "https://callvia-certo-backend.onrender.com"
+  VITE_API_URL = "https://callvia-certo.onrender.com"
 
 [[redirects]]
   from = "/api/*"
-  to = "https://callvia-certo-backend.onrender.com/api/:splat"
+  to = "https://callvia-certo.onrender.com/api/:splat"
 ```
 
 ### ✅ File 2: `render.yaml`
@@ -96,7 +96,7 @@ After both deployments complete:
 
 ```bash
 # Test backend health endpoint
-curl https://callvia-certo-backend.onrender.com/health
+curl https://callvia-certo.onrender.com/health
 
 # Should return:
 # {"status":"ok","timestamp":"...","version":"1.0.0"}
@@ -109,7 +109,7 @@ Open browser console on https://callvia-certo.netlify.app/:
 ```javascript
 // Check if VITE_API_URL is set
 console.log(import.meta.env.VITE_API_URL)
-// Should show: https://callvia-certo-backend.onrender.com
+// Should show: https://callvia-certo.onrender.com
 ```
 
 ---
@@ -120,7 +120,7 @@ console.log(import.meta.env.VITE_API_URL)
 
 **Check 1: Backend is running**
 ```bash
-curl https://callvia-certo-backend.onrender.com/health
+curl https://callvia-certo.onrender.com/health
 ```
 
 If this fails, your backend is down. Check Render logs.
@@ -142,7 +142,7 @@ origin: [
 Go to Netlify Dashboard → Site settings → Environment variables
 
 Should see:
-- `VITE_API_URL` = `https://callvia-certo-backend.onrender.com`
+- `VITE_API_URL` = `https://callvia-certo.onrender.com`
 
 If missing, add it manually and redeploy.
 
@@ -157,9 +157,9 @@ If you see CORS error in browser console:
 ### Issue: "Backend URL returns 404"
 
 Check the URL format:
-- ✅ Correct: `https://callvia-certo-backend.onrender.com`
-- ❌ Wrong: `http://callvia-certo-backend.onrender.com` (no https)
-- ❌ Wrong: `https://callvia-certo-backend.onrender.com/` (trailing slash)
+- ✅ Correct: `https://callvia-certo.onrender.com`
+- ❌ Wrong: `http://callvia-certo.onrender.com` (no https)
+- ❌ Wrong: `https://callvia-certo.onrender.com/` (trailing slash)
 
 ---
 
@@ -172,7 +172,7 @@ Before testing, verify:
 - [ ] Changes committed and pushed to git
 - [ ] Netlify redeployed (check deploy status)
 - [ ] Render redeployed (check deploy status)
-- [ ] Backend health endpoint responds: `curl https://callvia-certo-backend.onrender.com/health`
+- [ ] Backend health endpoint responds: `curl https://callvia-certo.onrender.com/health`
 - [ ] Both deployments show "Live" status
 
 ---

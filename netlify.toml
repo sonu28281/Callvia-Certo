@@ -6,11 +6,11 @@
 [build.environment]
   NODE_VERSION = "18"
   # IMPORTANT: Set your Render backend URL here
-  VITE_API_URL = "https://callvia-certo-backend.onrender.com"
+  VITE_API_URL = "https://callvia-certo.onrender.com"
 
 [[redirects]]
   from = "/api/*"
-  to = "https://callvia-certo-backend.onrender.com/api/:splat"
+  to = "https://callvia-certo.onrender.com/api/:splat"
   status = 200
   force = true
 
