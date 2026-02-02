@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import DashboardLayout from './components/layouts/DashboardLayout';
+import TenantLayout from './components/layouts/TenantLayout';
 import Dashboard from './pages/Dashboard';
 import TenantDashboard from './pages/TenantDashboard';
 import TenantImpersonationDashboard from './pages/TenantImpersonationDashboard';
@@ -19,7 +20,7 @@ import LiveKYC from './pages/LiveKYC';
 import UnifiedKYC from './pages/UnifiedKYC';
 
 function AppRoutes() {
-  const { user, loading } = useAuth();
+  const { user, loading, userProfile } = useAuth();
 
   if (loading) {
     return (
@@ -41,6 +42,11 @@ function AppRoutes() {
       <Route path="/login" element={!user ? <Login /> : <Navigate to="/" replace />} />
       <Route path="/signup" element={!user ? <SignupNew /> : <Navigate to="/" replace />} />
       
+      {/* Tenant Dashboard (Direct route for TENANT_ADMIN) */}
+      <Route path="/tenant-dashboard" element={user && userProfile?.role === 'TENANT_ADMIN' ? 
+        <TenantLayout><TenantDashboard /></TenantLayout>
+        : <Navigate to="/login" replace />} />
+      
       {/* Tenant Impersonation Dashboard (Top-level route) */}
       <Route path="/tenant-impersonation" element={user ? <TenantImpersonationDashboard /> : <Navigate to="/login" replace />} />
       
@@ -48,7 +54,6 @@ function AppRoutes() {
         <>
           <Route path="/" element={<DashboardLayout />}>
             <Route index element={<Dashboard />} />
-            <Route path="tenant-dashboard" element={<TenantDashboard />} />
             <Route path="wallet" element={<Wallet />} />
             <Route path="kyc" element={<KYC />} />
             <Route path="voice" element={<Voice />} />
