@@ -45,11 +45,11 @@ const adminNavigation: NavItem[] = [
 // Tenant navigation (TENANT_ADMIN only)
 const tenantNavigation: NavItem[] = [
   { name: 'Dashboard', href: '/tenant-dashboard', icon: LayoutDashboard },
-  { name: 'Verifications', href: '/tenant-dashboard', icon: UserCheck },
-  { name: 'Reports', href: '/tenant-dashboard', icon: FileText },
-  { name: 'Audit Logs', href: '/tenant-dashboard', icon: FileText },
-  { name: 'Team Members', href: '/tenant-dashboard', icon: Users },
-  { name: 'Settings', href: '/tenant-dashboard', icon: Settings },
+  { name: 'Verifications', href: '/tenant-dashboard/verifications', icon: UserCheck },
+  { name: 'Reports', href: '/tenant-dashboard/reports', icon: FileText },
+  { name: 'Audit Logs', href: '/tenant-dashboard/audit-logs', icon: FileText },
+  { name: 'Team Members', href: '/tenant-dashboard/team', icon: Users },
+  { name: 'Settings', href: '/tenant-dashboard/settings', icon: Settings },
 ];
 
 export default function Sidebar({ open, onClose, collapsed, onToggleCollapse }: SidebarProps) {

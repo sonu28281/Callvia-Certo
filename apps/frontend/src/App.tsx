@@ -4,6 +4,11 @@ import DashboardLayout from './components/layouts/DashboardLayout';
 import TenantLayout from './components/layouts/TenantLayout';
 import Dashboard from './pages/Dashboard';
 import TenantDashboard from './pages/TenantDashboard';
+import TenantVerifications from './pages/TenantVerifications';
+import TenantReports from './pages/TenantReports';
+import TenantAuditLogs from './pages/TenantAuditLogs';
+import TenantTeam from './pages/TenantTeam';
+import TenantSettings from './pages/TenantSettings';
 import TenantImpersonationDashboard from './pages/TenantImpersonationDashboard';
 import Wallet from './pages/Wallet';
 import KYC from './pages/KYC';
@@ -42,10 +47,17 @@ function AppRoutes() {
       <Route path="/login" element={!user ? <Login /> : <Navigate to="/" replace />} />
       <Route path="/signup" element={!user ? <SignupNew /> : <Navigate to="/" replace />} />
       
-      {/* Tenant Dashboard (Direct route for TENANT_ADMIN) */}
-      <Route path="/tenant-dashboard" element={user && userProfile?.role === 'TENANT_ADMIN' ? 
-        <TenantLayout><TenantDashboard /></TenantLayout>
-        : <Navigate to="/login" replace />} />
+      {/* Tenant Dashboard with nested routes */}
+      {user && userProfile?.role === 'TENANT_ADMIN' && (
+        <Route path="/tenant-dashboard" element={<TenantLayout />}>
+          <Route index element={<TenantDashboard />} />
+          <Route path="verifications" element={<TenantVerifications />} />
+          <Route path="reports" element={<TenantReports />} />
+          <Route path="audit-logs" element={<TenantAuditLogs />} />
+          <Route path="team" element={<TenantTeam />} />
+          <Route path="settings" element={<TenantSettings />} />
+        </Route>
+      )}
       
       {/* Tenant Impersonation Dashboard (Top-level route) */}
       <Route path="/tenant-impersonation" element={user ? <TenantImpersonationDashboard /> : <Navigate to="/login" replace />} />

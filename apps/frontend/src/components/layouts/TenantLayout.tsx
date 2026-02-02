@@ -1,9 +1,10 @@
 import { useState, ReactNode } from 'react';
+import { Outlet } from 'react-router-dom';
 import Sidebar from '../Sidebar';
 import Header from '../Header';
 
 interface TenantLayoutProps {
-  children: ReactNode;
+  children?: ReactNode;
 }
 
 export default function TenantLayout({ children }: TenantLayoutProps) {
@@ -27,7 +28,7 @@ export default function TenantLayout({ children }: TenantLayoutProps) {
 
         {/* Page Content */}
         <main className="flex-1 overflow-y-auto p-6">
-          {children}
+          {children ? children : <Outlet />}
         </main>
       </div>
     </div>
