@@ -233,4 +233,71 @@ export default async function tenantRoutes(fastify: FastifyInstance) {
       }
     }
   );
-}
+
+  // Delete tenant (PLATFORM_ADMIN only)
+  fastify.delete(
+    '/list/:tenantId',
+    {
+      preHandler: [requireRole(UserRole.SUPER_ADMIN)],
+    },
+    async (request, reply) => {
+      const { tenantId } = request.params as { tenantId: string };
+
+      try {
+        const { auth } = await import('../config/firebase-admin.config');
+
+        // Get tenant document
+        const tenantRef = db.collection('tenants').doc(tenantId);
+        const tenantDoc = await tenantRef.get();
+
+        if (!tenantDoc.exists) {
+          return reply.code(404).send({
+            success: false,
+            error: { message: 'Tenant not found' }
+          });
+        }
+
+        // Find all users for this tenant
+        const usersSnapshot = await db.collection('users')
+          .where('tenantId', '==', tenantId)
+          .get();
+
+        // Delete all users from Firebase Auth and Firestore
+        for (const userDoc of usersSnapshot.docs) {
+          const userId = userDoc.id;
+          
+          // Delete from Firebase Auth
+          try {
+            await auth.deleteUser(userId);
+          } catch (error: any) {
+            console.warn(`Failed to delete user ${userId} from Auth:`, error.message);
+          }
+          
+          // Delete from Firestore
+          await db.collection('users').doc(userId).delete();
+        }
+
+        // Delete tenant document
+        await tenantRef.delete();
+
+        return {
+          success: true,
+          data: {
+            tenantId,
+            message: `Tenant and ${usersSnapshot.size} user(s) deleted successfully`,
+            deletedUsers: usersSnapshot.size
+          },
+          meta: {
+            request_id: request.requestId,
+            timestamp: new Date().toISOString(),
+          },
+        };
+      } catch (error: any) {
+        console.error('Delete tenant error:', error);
+        return reply.code(500).send({
+          success: false,
+          error: { message: error.message || 'Failed to delete tenant' }
+        });
+      }
+    }
+  );
