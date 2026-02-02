@@ -15,6 +15,43 @@ interface AadhaarOTPInitResponse {
   status: 'success' | 'failed';
 }
 
+interface AadhaarAPIResponse {
+  request_id?: string;
+  requestId?: string;
+  name?: string;
+  full_name?: string;
+  dob?: string;
+  date_of_birth?: string;
+  gender?: string;
+  address?: {
+    house?: string;
+    street?: string;
+    landmark?: string;
+    locality?: string;
+    vtc?: string;
+    district?: string;
+    state?: string;
+    pincode?: string;
+  };
+  house?: string;
+  street?: string;
+  landmark?: string;
+  locality?: string;
+  vtc?: string;
+  dist?: string;
+  state?: string;
+  pincode?: string;
+  photo_base64?: string;
+  photo?: string;
+  masked_aadhaar?: string;
+  aadhaar_number?: string;
+  email?: string;
+  mobile?: string;
+  care_of?: string;
+  co?: string;
+  xml_data?: string;
+}
+
 interface AadhaarOTPVerifyResponse {
   status: 'success' | 'failed';
   data: {
@@ -140,10 +177,10 @@ class AadhaarOTPService {
         throw new Error('Failed to send OTP to Aadhaar mobile');
       }
 
-      const data = await response.json();
+      const data: AadhaarAPIResponse = await response.json();
 
       return {
-        requestId: data.request_id || data.requestId,
+        requestId: data.request_id || data.requestId || '',
         message: 'OTP sent to Aadhaar-registered mobile number',
         status: 'success',
       };
@@ -187,15 +224,15 @@ class AadhaarOTPService {
         throw new Error('OTP verification failed');
       }
 
-      const data = await response.json();
+      const data: AadhaarAPIResponse = await response.json();
 
       // Decrypt and parse response
       const kycData: AadhaarOTPVerifyResponse = {
         status: 'success',
         data: {
-          name: data.name || data.full_name,
-          dob: data.dob || data.date_of_birth,
-          gender: data.gender,
+          name: data.name || data.full_name || '',
+          dob: data.dob || data.date_of_birth || '',
+          gender: (data.gender || 'O') as 'M' | 'F' | 'O',
           address: {
             house: data.address?.house || data.house || '',
             street: data.address?.street || data.street || '',

@@ -102,7 +102,7 @@ export async function realKycRoutes(fastify: FastifyInstance) {
 
         // Audit log
         await auditLogger.log({
-          eventType: 'KYC_REAL_INITIATED',
+          event_type: 'KYC_REAL_INITIATED',
           eventResult: 'ALLOWED',
           actorId: userId,
           actorRole: role,
@@ -135,7 +135,7 @@ export async function realKycRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         // Audit log for failure
         await auditLogger.log({
-          eventType: 'KYC_REAL_FAILED',
+          event_type: 'KYC_REAL_FAILED',
           eventResult: 'FAILED',
           actorId: userId,
           actorRole: role,
@@ -185,7 +185,7 @@ export async function realKycRoutes(fastify: FastifyInstance) {
         // TODO: Update database with check ID
 
         await auditLogger.log({
-          eventType: 'KYC_CHECK_CREATED',
+          event_type: 'KYC_CHECK_CREATED',
           eventResult: 'ALLOWED',
           actorId: userId,
           actorRole: role,

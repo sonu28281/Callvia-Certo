@@ -11,7 +11,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import digilockerService from '../services/digilocker.service';
 import aadhaarOtpService from '../services/aadhaar-otp.service';
-import emailService from '../services/email.service';
+import { emailService } from '../services/email.service';
 import crypto from 'crypto';
 
 // In-memory storage (replace with database in production)

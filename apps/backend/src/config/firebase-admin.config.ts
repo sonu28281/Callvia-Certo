@@ -24,11 +24,11 @@ if (!admin.apps.length) {
   console.log('🔥 Firebase Admin initialized successfully');
 }
 
-export const auth = admin.auth();
-export const db = admin.firestore();
+export const auth: admin.auth.Auth = admin.auth();
+export const db: admin.firestore.Firestore = admin.firestore();
 
 // Helper functions
-export const verifyIdToken = async (token: string) => {
+export const verifyIdToken = async (token: string): Promise<admin.auth.DecodedIdToken> => {
   try {
     const decodedToken = await auth.verifyIdToken(token);
     return decodedToken;

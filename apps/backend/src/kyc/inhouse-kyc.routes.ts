@@ -427,7 +427,7 @@ export async function inHouseKycRoutes(fastify: FastifyInstance) {
 
         // Audit log
         await auditLogger.log({
-          eventType: 'KYC_APPROVED',
+          event_type: 'KYC_APPROVED',
           eventResult: 'ALLOWED',
           actorId: userId,
           actorRole: role,
@@ -478,7 +478,7 @@ export async function inHouseKycRoutes(fastify: FastifyInstance) {
 
         // Audit log
         await auditLogger.log({
-          eventType: 'KYC_REJECTED',
+          event_type: 'KYC_REJECTED',
           eventResult: 'REJECTED',
           actorId: userId,
           actorRole: role,

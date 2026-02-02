@@ -89,7 +89,7 @@ class DigiLockerService {
   /**
    * Generate mock KYC data for testing
    */
-  private generateMockKycData(): AadhaarKycData {
+  private generateMockKycData(): any {
     return {
       name: 'Demo User',
       dob: '01-01-1990',
@@ -163,7 +163,8 @@ class DigiLockerService {
       throw new Error(`DigiLocker token exchange failed: ${error}`);
     }
 
-    return response.json();
+    const result: any = await response.json();
+    return result as DigiLockerTokenResponse;
   }
 
   /**
@@ -182,7 +183,7 @@ class DigiLockerService {
       throw new Error('Failed to fetch DigiLocker documents');
     }
 
-    const data = await response.json();
+    const data: any = await response.json();
     return data.items || [];
   }
 

@@ -11,22 +11,14 @@ export interface OverrideLog {
   // Configuration
   originalConfig: {
     verificationMethods: {
-      livenessCheck: boolean;
-      digilocker: boolean;
-      documentUpload: boolean;
+      [key: string]: boolean;
     };
     documentTypes: string[];
     estimatedCost: number;
   };
   
   overrideConfig: {
-    verificationMethods: {
-      livenessCheck: boolean;
-      digilocker: boolean;
-      documentUpload: boolean;
-      aadhaarOTP?: boolean;
-      videoKYC?: boolean;
-    };
+    verificationMethods: Record<string, boolean>;
     documentTypes: string[];
     estimatedCost: number;
   };
