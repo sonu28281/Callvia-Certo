@@ -61,8 +61,8 @@ export default function Sidebar({ open, onClose, collapsed, onToggleCollapse }: 
   const navItems = userProfile?.role === 'TENANT_ADMIN' ? tenantNavigation : adminNavigation;
   
   // Determine logo text - show company name for tenants, "Callvia Certo" for admins
-  const logoText = userProfile?.role === 'TENANT_ADMIN' 
-    ? (userProfile?.displayName || 'Tenant')
+  const logoText = userProfile?.role === 'TENANT_ADMIN' && userProfile?.companyName
+    ? userProfile.companyName
     : 'Callvia Certo';
 
   const handleLogout = async () => {

@@ -8,6 +8,7 @@ import {
   updateProfile
 } from 'firebase/auth';
 import { auth } from '../config/firebase';
+import { getFirestore, doc, getDoc } from 'firebase/firestore';
 import { API_ENDPOINTS } from '../config/api';
 
 interface UserProfile {
@@ -16,6 +17,7 @@ interface UserProfile {
   displayName: string;
   role: 'PLATFORM_ADMIN' | 'SUPER_ADMIN' | 'TENANT_ADMIN' | 'TENANT_USER';
   tenantId?: string;
+  companyName?: string;
   phoneNumber?: string;
   photoURL?: string;
   isActive: boolean;
@@ -57,6 +59,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       console.log('👤 User profile from claims:', { uid: firebaseUser.uid, email: firebaseUser.email, role, tenantId, allClaims: idTokenResult.claims });
       
+      // Fetch tenant company name if user is TENANT_ADMIN
+      let companyName: string | undefined;
+      if (role === 'TENANT_ADMIN' && tenantId) {
+        try {
+          const db = getFirestore();
+          const tenantDoc = await getDoc(doc(db, 'tenants', tenantId));
+          if (tenantDoc.exists()) {
+            companyName = tenantDoc.data().companyName;
+            console.log('🏢 Fetched tenant company name:', companyName);
+          }
+        } catch (error) {
+          console.error('Error fetching tenant data:', error);
+        }
+      }
+      
       // Set profile from token claims
       setUserProfile({
         userId: firebaseUser.uid,
@@ -64,6 +81,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         displayName: firebaseUser.displayName || firebaseUser.email!.split('@')[0],
         role: role as any || 'TENANT_USER',
         tenantId: tenantId,
+        companyName: companyName,
         isActive: true,
         createdAt: new Date(),
         phoneNumber: firebaseUser.phoneNumber || undefined,
