@@ -7,8 +7,7 @@ import {
   onAuthStateChanged,
   updateProfile
 } from 'firebase/auth';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
-import { auth, db } from '../config/firebase';
+import { auth } from '../config/firebase';
 import { API_ENDPOINTS } from '../config/api';
 
 interface UserProfile {
@@ -48,19 +47,39 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Fetch user profile from Firestore
-  const fetchUserProfile = async (uid: string) => {
+  // Fetch user profile from backend API using Firebase token
+  const fetchUserProfile = async (firebaseUser: User) => {
     try {
-      const userDoc = await getDoc(doc(db, 'users', uid));
-      if (userDoc.exists()) {
-        const data = userDoc.data();
-        setUserProfile({
-          ...data,
-          createdAt: data.createdAt?.toDate() || new Date()
-        } as UserProfile);
-      }
+      const token = await firebaseUser.getIdToken();
+      
+      // Get custom claims from token
+      const idTokenResult = await firebaseUser.getIdTokenResult();
+      const role = idTokenResult.claims.role as string;
+      const tenantId = idTokenResult.claims.tenantId as string | undefined;
+      
+      // Set profile from token claims
+      setUserProfile({
+        userId: firebaseUser.uid,
+        email: firebaseUser.email!,
+        displayName: firebaseUser.displayName || firebaseUser.email!.split('@')[0],
+        role: role as any || 'TENANT_USER',
+        tenantId: tenantId,
+        isActive: true,
+        createdAt: new Date(),
+        phoneNumber: firebaseUser.phoneNumber || undefined,
+        photoURL: firebaseUser.photoURL || undefined,
+      });
     } catch (error) {
       console.error('Error fetching user profile:', error);
+      // Fallback to basic profile
+      setUserProfile({
+        userId: firebaseUser.uid,
+        email: firebaseUser.email!,
+        displayName: firebaseUser.displayName || firebaseUser.email!.split('@')[0],
+        role: 'TENANT_USER',
+        isActive: true,
+        createdAt: new Date(),
+      });
     }
   };
 
@@ -69,7 +88,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
       if (firebaseUser) {
-        await fetchUserProfile(firebaseUser.uid);
+        await fetchUserProfile(firebaseUser);
       } else {
         setUserProfile(null);
       }
@@ -84,43 +103,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const result = await signInWithEmailAndPassword(auth, email, password);
       
-      // Fetch user profile first to check tenant status
-      const userDoc = await getDoc(doc(db, 'users', result.user.uid));
-      if (!userDoc.exists()) {
-        await signOut(auth);
-        throw new Error('User profile not found');
-      }
+      // Get token and check custom claims
+      const idTokenResult = await result.user.getIdTokenResult();
+      const role = idTokenResult.claims.role;
+      const tenantId = idTokenResult.claims.tenantId;
 
-      const userData = userDoc.data();
-      const tenantId = userData.tenantId;
+      // For non-platform admins, verify tenant access via backend
+      if (tenantId && role !== 'PLATFORM_ADMIN') {
+        // Backend will validate tenant status
+        const token = await result.user.getIdToken();
+        const response = await fetch(`${API_ENDPOINTS.AUTH.SET_CLAIMS}`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ role, tenantId })
+        });
 
-      // Check if user has a tenant (tenant admins and users)
-      if (tenantId && userData.role !== 'PLATFORM_ADMIN') {
-        const tenantDoc = await getDoc(doc(db, 'tenants', tenantId));
-        
-        if (!tenantDoc.exists()) {
+        if (!response.ok) {
           await signOut(auth);
-          throw new Error('Tenant not found');
-        }
-
-        const tenantData = tenantDoc.data();
-        
-        // Check if tenant is disabled
-        if (tenantData.isActive === false || tenantData.status === 'disabled') {
-          await signOut(auth);
-          throw new Error('Your account has been disabled. Please contact admin for assistance.');
+          throw new Error('Account access denied. Contact your administrator.');
         }
       }
-      
-      // Load user profile
-      await fetchUserProfile(result.user.uid);
-      
-      // Update last login time
-      await setDoc(doc(db, 'users', result.user.uid), {
-        lastLoginAt: new Date()
-      }, { merge: true });
-      
-      console.log('✅ Login successful');
+
+      // Profile will be fetched automatically by onAuthStateChanged
     } catch (error: any) {
       console.error('Login error:', error);
       throw new Error(error.message || 'Login failed');
@@ -150,25 +157,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         displayName,
         role: role as any,
         tenantId,
-        isActive: true,
-        createdAt: new Date()
       };
 
-      await setDoc(doc(db, 'users', user.uid), userProfile);
-
-      // Set custom claims via backend (optional - for role-based access)
-      const idToken = await user.getIdToken();
-      await fetch(API_ENDPOINTS.AUTH.SET_CLAIMS, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${idToken}`
-        },
-        body: JSON.stringify({ role, tenantId })
-      });
-
-      console.log('✅ Signup successful');
-      await fetchUserProfile(user.uid);
+      // Note: User creation now happens via backend signup API
+      // This signup function is for internal use only
+      console.log('✅ Signup successful (frontend only - use backend API for full signup)');
+      await fetchUserProfile(user);
     } catch (error: any) {
       console.error('Signup error:', error);
       throw new Error(error.message || 'Signup failed');
