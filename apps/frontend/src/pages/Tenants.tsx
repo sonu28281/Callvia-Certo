@@ -23,6 +23,11 @@ export default function Tenants() {
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [selectedTenants, setSelectedTenants] = useState<string[]>([]);
 
+  // Debug: log the current user role
+  useEffect(() => {
+    console.log('👤 Current user on Tenants page:', { role: userProfile?.role, isSuperAdmin, userProfile });
+  }, [userProfile, isSuperAdmin]);
+
   // Fetch tenants from API
   useEffect(() => {
     const fetchTenants = async () => {

@@ -50,10 +50,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Fetch user profile from backend API using Firebase token
   const fetchUserProfile = async (firebaseUser: User) => {
     try {
-      // Get custom claims from token
-      const idTokenResult = await firebaseUser.getIdTokenResult();
+      // Get custom claims from token (force refresh to get latest)
+      const idTokenResult = await firebaseUser.getIdTokenResult(true);
       const role = idTokenResult.claims.role as string;
       const tenantId = idTokenResult.claims.tenantId as string | undefined;
+      
+      console.log('👤 User profile from claims:', { uid: firebaseUser.uid, email: firebaseUser.email, role, tenantId, allClaims: idTokenResult.claims });
       
       // Set profile from token claims
       setUserProfile({
@@ -101,10 +103,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const result = await signInWithEmailAndPassword(auth, email, password);
       
-      // Get token and check custom claims
-      const idTokenResult = await result.user.getIdTokenResult();
+      // Force token refresh to get updated custom claims
+      const idTokenResult = await result.user.getIdTokenResult(true);
       const role = idTokenResult.claims.role;
       const tenantId = idTokenResult.claims.tenantId;
+      
+      console.log('👤 Login successful:', { email, role, tenantId, allClaims: idTokenResult.claims });
 
       // For non-platform admins, verify tenant access via backend
       if (tenantId && role !== 'PLATFORM_ADMIN') {
