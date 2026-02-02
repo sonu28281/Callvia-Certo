@@ -5,9 +5,8 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc",
+    "build": "tsc --noEmitOnError false",
     "start": "node dist/index.js",
-    "postinstall": "npm run build",
     "lint": "eslint src --ext .ts",
     "test": "vitest"
   },
