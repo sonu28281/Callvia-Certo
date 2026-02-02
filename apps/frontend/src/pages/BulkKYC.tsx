@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Upload, Download, FileText, CheckCircle, XCircle, AlertCircle, Users } from 'lucide-react';
+import { Upload, Download, FileText, CheckCircle, XCircle, Users } from 'lucide-react';
 
 export default function BulkKYC() {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);

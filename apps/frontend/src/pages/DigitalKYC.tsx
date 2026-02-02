@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { 
   Shield, 
   CheckCircle, 
@@ -43,7 +43,8 @@ export default function DigitalKYC() {
   // Aadhaar OTP flow state
   const [aadhaarNumber, setAadhaarNumber] = useState('');
   const [sessionId, setSessionId] = useState('');
-  const [requestId, setRequestId] = useState('');
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_requestId, setRequestId] = useState('');
   const [otp, setOtp] = useState('');
   const [kycData, setKycData] = useState<AadhaarData | null>(null);
   const [selfiePhoto, setSelfiePhoto] = useState<string | null>(null);

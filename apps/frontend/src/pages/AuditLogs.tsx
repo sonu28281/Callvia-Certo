@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FileText, Filter, Download, Search } from 'lucide-react';
+import { FileText, Download, Search } from 'lucide-react';
 
 export default function AuditLogs() {
   const [searchQuery, setSearchQuery] = useState('');

@@ -25,7 +25,8 @@ interface LivenessCheck {
 
 export default function LiveKYC() {
   const [currentStep, setCurrentStep] = useState<LivenessStep>('instructions');
-  const [loading, setLoading] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [cameraActive, setCameraActive] = useState(false);
   const [currentActionIndex, setCurrentActionIndex] = useState(0);

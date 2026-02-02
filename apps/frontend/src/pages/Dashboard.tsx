@@ -3,7 +3,6 @@ import {
   Wallet,
   UserCheck,
   Phone,
-  FileText,
   TrendingUp,
   AlertCircle,
 } from 'lucide-react';

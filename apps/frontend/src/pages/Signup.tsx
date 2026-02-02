@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Building2, Mail, Lock, User, Phone, Globe, CreditCard, CheckCircle } from 'lucide-react';
+import { Building2, Mail, Lock, User, Phone, Globe, CheckCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function Signup() {

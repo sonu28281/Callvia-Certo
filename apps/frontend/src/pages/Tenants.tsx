@@ -18,7 +18,6 @@ interface Tenant {
 export default function Tenants() {
   const [viewMode, setViewMode] = useState<'cards' | 'grid'>('cards');
   const { userProfile } = useAuth();
-  const navigate = useNavigate();
   const isSuperAdmin = userProfile?.role === 'PLATFORM_ADMIN';
   const [loading, setLoading] = useState(true);
   const [tenants, setTenants] = useState<Tenant[]>([]);
