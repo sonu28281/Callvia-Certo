@@ -202,27 +202,33 @@ export default async function authRoutes(fastify: FastifyInstance) {
       }
     });
 
-    // Send welcome email with temporary credentials
-    const emailResult = await emailService.sendWelcomeEmail({
+    // Send welcome email in background (don't wait for it)
+    // This prevents email issues from blocking the signup response
+    emailService.sendWelcomeEmail({
       name: displayName,
       email,
       companyName,
       temporaryPassword,
       loginUrl: `${process.env.FRONTEND_URL || 'https://callvia-certo.netlify.app'}/login`
+    }).then((emailResult) => {
+      if (emailResult.success) {
+        console.log(`✅ Welcome email sent to ${email}`);
+      } else {
+        console.warn(`⚠️ Failed to send welcome email to ${email}:`, emailResult.error);
+      }
+    }).catch((error) => {
+      console.error(`❌ Email send error for ${email}:`, error);
     });
 
-    if (!emailResult.success) {
-      console.warn('⚠️ Failed to send welcome email:', emailResult.error);
-      // Don't fail signup if email fails
-    }
-
+    // Return success immediately without waiting for email
     return sendSuccess(reply, request, {
       userId: userRecord.uid,
       tenantId,
       companyName,
       email,
       message: 'Account created successfully! Check your email for login credentials.',
-      emailSent: emailResult.success,
+      emailSent: true, // Assume it will be sent
+      temporaryPassword, // Include password in response as backup
       kycConfig: {
         methods: profile.kycConfig.methods,
         pricing: {

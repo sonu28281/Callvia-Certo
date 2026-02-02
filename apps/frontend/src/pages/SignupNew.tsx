@@ -35,7 +35,10 @@ export default function SignupNew() {
     setLoading(true);
 
     try {
-      // Call backend signup API to create tenant + Firebase user
+      // Call backend signup API to create tenant + Firebase user with timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 45000); // 45 second timeout
+
       const response = await fetch(API_ENDPOINTS.AUTH.SIGNUP, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -45,8 +48,11 @@ export default function SignupNew() {
           companyName,
           role,
           kycPackage
-        })
+        }),
+        signal: controller.signal
       });
+
+      clearTimeout(timeoutId);
 
       const data = await response.json();
 
@@ -56,11 +62,29 @@ export default function SignupNew() {
 
       // Show success message
       setSuccess(true);
+      
+      // Show user-friendly message with temporary password
+      const tempPassword = data.data?.temporaryPassword;
+      let message = `✅ Account created successfully!\n\nEmail: ${email}\n`;
+      
+      if (tempPassword) {
+        message += `Temporary Password: ${tempPassword}\n\n⚠️ IMPORTANT: Save this password! Also check your email for login credentials.\n\n`;
+      } else {
+        message += `\nCheck your email (${email}) for login credentials.\n\n`;
+      }
+      
+      message += `Redirecting to login page...`;
+      alert(message);
+      
       setTimeout(() => {
         navigate('/login');
       }, 3000);
     } catch (err: any) {
-      setError(err.message || 'Failed to create account. Please try again.');
+      if (err.name === 'AbortError') {
+        setError('Request timeout. The server is taking too long to respond. Please try again or contact support.');
+      } else {
+        setError(err.message || 'Failed to create account. Please try again.');
+      }
       console.error('Signup error:', err);
     } finally {
       setLoading(false);
