@@ -47,8 +47,18 @@ export async function authMiddleware(
       role: decodedToken.role || 'TENANT_USER',
       email: decodedToken.email || '',
     };
+    
+    console.log('✅ Token verified successfully', {
+      user_id: request.user.user_id,
+      role: request.user.role,
+      email: request.user.email
+    });
   } catch (error: any) {
-    console.error('Token verification failed:', error.message);
+    console.error('❌ Token verification failed:', {
+      message: error.message,
+      code: error.code,
+      path: request.url
+    });
     return reply.status(401).send({
       success: false,
       error: {

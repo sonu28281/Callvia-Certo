@@ -6,6 +6,7 @@ import { AuditEventType, AuditEventResult, ActorType } from '@callvia-certo/type
 export function requireRole(...allowedRoles: (UserRole | string)[]) {
   return async (request: FastifyRequest, reply: FastifyReply) => {
     if (!request.user) {
+      console.error('❌ RBAC: No user in request context');
       return reply.status(401).send({
         success: false,
         error: {
@@ -21,7 +22,22 @@ export function requireRole(...allowedRoles: (UserRole | string)[]) {
     
     const userRole = request.user.role as UserRole;
     
+    console.log('🔐 RBAC Check', {
+      user: request.user.user_id,
+      userRole,
+      allowedRoles,
+      hasAccess: allowedRoles.includes(userRole),
+      path: request.url
+    });
+    
     if (!allowedRoles.includes(userRole)) {
+      console.warn('❌ RBAC DENIED', {
+        user: request.user.user_id,
+        userRole,
+        requiredRoles: allowedRoles,
+        path: request.url
+      });
+      
       await auditLogger.log({
         tenant_id: request.user.tenant_id,
         event_type: AuditEventType.PERMISSION_DENIED,
