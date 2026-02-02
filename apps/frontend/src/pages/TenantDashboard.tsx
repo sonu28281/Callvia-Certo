@@ -88,75 +88,68 @@ export default function TenantDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-              <p className="text-gray-600 mt-1">Welcome back, {userProfile?.displayName || 'User'}</p>
-            </div>
-            <div className="text-right">
-              <p className="text-sm text-gray-500">Tenant: {userProfile?.tenantId}</p>
-            </div>
-          </div>
+    <div className="space-y-8">
+      {/* Welcome Section */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+          <p className="text-gray-600 mt-1">Welcome back, {userProfile?.displayName || 'User'}</p>
+        </div>
+        <div className="text-right">
+          <p className="text-sm text-gray-500">Tenant: {userProfile?.tenantId}</p>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-        {/* Summary Cards */}
-        <div className="mb-8">
-          <DashboardSummary stats={stats} />
-        </div>
+      {/* Summary Cards */}
+      <div className="mb-8">
+        <DashboardSummary stats={stats} />
+      </div>
 
-        {/* Usage Warning */}
-        {stats.thisMonthUsed > stats.monthlyQuota * 0.8 && (
-          <div className="mb-8 bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
-            <div>
-              <h3 className="font-semibold text-yellow-900">Usage Warning</h3>
-              <p className="text-sm text-yellow-800">
-                You've used {stats.thisMonthUsed} of {stats.monthlyQuota} verifications this month. 
-                <a href="/settings" className="ml-1 underline font-semibold">Upgrade your plan</a> to increase quota.
-              </p>
-            </div>
+      {/* Usage Warning */}
+      {stats.thisMonthUsed > stats.monthlyQuota * 0.8 && (
+        <div className="mb-8 bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
+          <div>
+            <h3 className="font-semibold text-yellow-900">Usage Warning</h3>
+            <p className="text-sm text-yellow-800">
+              You've used {stats.thisMonthUsed} of {stats.monthlyQuota} verifications this month. 
+              <a href="/settings" className="ml-1 underline font-semibold">Upgrade your plan</a> to increase quota.
+            </p>
           </div>
-        )}
-
-        {/* Quick Actions */}
-        <div className="mb-8">
-          <QuickActions 
-            onStartVerification={() => setShowVerificationWizard(true)}
-            onBulkUpload={() => setShowBulkUpload(true)}
-          />
         </div>
+      )}
 
-        {/* Enabled Services */}
-        <div className="mb-12">
-          <div className="mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-              <span className="text-green-500">✅</span> Enabled Services (Ready to Use)
-            </h2>
-            <p className="text-gray-600 mt-1">These services are fully functional and ready for your customers</p>
-          </div>
-          <EnabledServicesGrid onSelectService={(serviceId) => {
-            // Route to specific service page
-            console.log('Selected service:', serviceId);
-          }} />
-        </div>
+      {/* Quick Actions */}
+      <div className="mb-8">
+        <QuickActions 
+          onStartVerification={() => setShowVerificationWizard(true)}
+          onBulkUpload={() => setShowBulkUpload(true)}
+        />
+      </div>
 
-        {/* Coming Soon Services */}
-        <div>
-          <div className="mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-              <span className="text-gray-400">⏳</span> Coming Soon (Q2-Q4 2026)
-            </h2>
-            <p className="text-gray-600 mt-1">These features are under development and will be available soon</p>
-          </div>
-          <ComingSoonServicesGrid />
+      {/* Enabled Services */}
+      <div className="mb-12">
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <span className="text-green-500">✅</span> Enabled Services (Ready to Use)
+          </h2>
+          <p className="text-gray-600 mt-1">These services are fully functional and ready for your customers</p>
         </div>
+        <EnabledServicesGrid onSelectService={(serviceId) => {
+          // Route to specific service page
+          console.log('Selected service:', serviceId);
+        }} />
+      </div>
+
+      {/* Coming Soon Services */}
+      <div>
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <span className="text-gray-400">⏳</span> Coming Soon (Q2-Q4 2026)
+          </h2>
+          <p className="text-gray-600 mt-1">These features are under development and will be available soon</p>
+        </div>
+        <ComingSoonServicesGrid />
       </div>
 
       {/* Modals */}
