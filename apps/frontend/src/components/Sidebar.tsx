@@ -59,6 +59,11 @@ export default function Sidebar({ open, onClose, collapsed, onToggleCollapse }: 
 
   // Determine which navigation to show based on user role
   const navItems = userProfile?.role === 'TENANT_ADMIN' ? tenantNavigation : adminNavigation;
+  
+  // Determine logo text - show company name for tenants, "Callvia Certo" for admins
+  const logoText = userProfile?.role === 'TENANT_ADMIN' 
+    ? (userProfile?.displayName || 'Tenant')
+    : 'Callvia Certo';
 
   const handleLogout = async () => {
     try {
@@ -95,8 +100,8 @@ export default function Sidebar({ open, onClose, collapsed, onToggleCollapse }: 
             <div className="flex items-center gap-2">
               <Shield className={`h-8 w-8 text-primary-600 transition-transform duration-300 hover:rotate-12 ${collapsed ? 'mx-auto' : ''}`} />
               {!collapsed && (
-                <span className="text-lg font-semibold text-gray-900 animate-fade-in">
-                  Callvia Certo
+                <span className="text-lg font-semibold text-gray-900 animate-fade-in truncate">
+                  {logoText}
                 </span>
               )}
             </div>
