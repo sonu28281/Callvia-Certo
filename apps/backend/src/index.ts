@@ -39,7 +39,11 @@ async function buildServer() {
 
   // Register plugins
   await fastify.register(cors, {
-    origin: true, // TODO: Configure based on white-label domains
+    origin: [
+      'http://localhost:5173',
+      'http://localhost:5174',
+      'https://callvia-certo.netlify.app'
+    ],
     credentials: true,
   });
 
