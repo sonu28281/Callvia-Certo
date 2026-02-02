@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
   CheckCircle2,
@@ -14,16 +13,10 @@ import {
   ChevronRight
 } from 'lucide-react';
 
-interface ImpersonationSession {
-  tenantId: string;
-  tenantName: string;
-  impersonatedBy: string;
-  startedAt: Date;
-}
+
 
 export default function TenantImpersonationDashboard() {
   const navigate = useNavigate();
-  const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [currentPage, setCurrentPage] = useState<'dashboard' | 'verifications' | 'reports' | 'settings' | 'audit' | 'team'>('dashboard');
 
@@ -156,12 +149,12 @@ export default function TenantImpersonationDashboard() {
         {/* Page Content */}
         <div className="flex-1 overflow-auto">
           <div className="p-6">
-            {currentPage === 'dashboard' && <DashboardPage tenantId={impersonationData.tenantId} tenantName={impersonationData.tenantName} />}
-            {currentPage === 'verifications' && <VerificationsPage tenantId={impersonationData.tenantId} />}
-            {currentPage === 'reports' && <ReportsPage tenantId={impersonationData.tenantId} />}
-            {currentPage === 'audit' && <AuditLogsPage tenantId={impersonationData.tenantId} />}
-            {currentPage === 'team' && <TeamPage tenantId={impersonationData.tenantId} />}
-            {currentPage === 'settings' && <SettingsPage tenantId={impersonationData.tenantId} />}
+            {currentPage === 'dashboard' && <DashboardPage />}
+            {currentPage === 'verifications' && <VerificationsPage />}
+            {currentPage === 'reports' && <ReportsPage />}
+            {currentPage === 'audit' && <AuditLogsPage />}
+            {currentPage === 'team' && <TeamPage />}
+            {currentPage === 'settings' && <SettingsPage />}
           </div>
         </div>
       </div>
@@ -170,7 +163,7 @@ export default function TenantImpersonationDashboard() {
 }
 
 // Dashboard Page Content
-function DashboardPage({ tenantId, tenantName }: { tenantId: string; tenantName: string }) {
+function DashboardPage() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -244,7 +237,7 @@ function DashboardPage({ tenantId, tenantName }: { tenantId: string; tenantName:
 }
 
 // Verifications Page
-function VerificationsPage({ tenantId }: { tenantId: string }) {
+function VerificationsPage() {
   return (
     <div className="space-y-4">
       <div className="flex gap-4">
@@ -291,7 +284,7 @@ function VerificationsPage({ tenantId }: { tenantId: string }) {
 }
 
 // Reports Page
-function ReportsPage({ tenantId }: { tenantId: string }) {
+function ReportsPage() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -345,7 +338,7 @@ function ReportsPage({ tenantId }: { tenantId: string }) {
 }
 
 // Audit Logs Page
-function AuditLogsPage({ tenantId }: { tenantId: string }) {
+function AuditLogsPage() {
   return (
     <div className="bg-white rounded-lg shadow-sm overflow-hidden">
       <table className="w-full text-sm">
@@ -384,7 +377,7 @@ function AuditLogsPage({ tenantId }: { tenantId: string }) {
 }
 
 // Team Page
-function TeamPage({ tenantId }: { tenantId: string }) {
+function TeamPage() {
   return (
     <div className="space-y-4">
       <button className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-semibold">
@@ -436,7 +429,7 @@ function TeamPage({ tenantId }: { tenantId: string }) {
 }
 
 // Settings Page
-function SettingsPage({ tenantId }: { tenantId: string }) {
+function SettingsPage() {
   return (
     <div className="space-y-6 max-w-2xl">
       {/* API Keys */}
